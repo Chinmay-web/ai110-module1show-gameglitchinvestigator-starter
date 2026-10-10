@@ -43,6 +43,11 @@ I typed "thirty". It said "That is not a number," but it still counted as an att
 
 I asked Claude why New Game still showed "Game over." It correctly explained that the new_game block resets attempts and secret but never sets status back to "playing", so the game-over check calls st.stop() on every rerun. I verified this by reading app.py. Its suggested fix sets attempts = 1, but I think that keeps an existing off-by-one bug (a fresh game shows 7 attempts left instead of 8), so I'd reset attempts to 0 instead.
 
+
+Correct AI suggestion: I asked the AI why New Game kept showing "Game over." It explained that the new_game block reset attempts and secret but never set status back to "playing", so the status check called st.stop() on every rerun. This was correct. I verified it by reading app.py, then after the fix I won a game, clicked New Game, and could play again with score 0 and empty history.
+
+Suggestion I changed: The AI's first fix for New Game set attempts = 1, matching the original starting value. I changed it to 0 because starting at 1 caused an off-by-one bug: a fresh Normal game showed "Attempts left: 7" instead of 8. I verified this by checking that a new game now shows 8 attempts left.
+
 ## 3. Debugging and testing your fixes
 
 - How did you decide whether a bug was really fixed?
@@ -50,7 +55,11 @@ I asked Claude why New Game still showed "Game over." It correctly explained tha
   and what it showed you about your code.
 - Did AI help you design or understand any tests? How?
 
----
+Automated tests: I ran `python -m pytest`. The 3 starter tests passed after the refactor, and I asked the AI to add 3 new tests: check_guess(9, 50) returns "Too Low" (this broke before when the secret was compared as a string), check_guess(60, 50) returns "Too High", and parse_guess("abc") returns ok=False. Result: 6 passed.
+
+Manual testing: I ran the game with streamlit. Guessing above the secret now shows "Go LOWER!" instead of "Go HIGHER!". I won a game, clicked New Game, and the game restarted correctly with score 0, empty history, and 8 attempts left.
+
+Note: Plain `pytest` failed to find pytest on my system Python, so I ran it as `python -m pytest` inside the .venv.
 
 ## 4. What did you learn about Streamlit and state?
 
